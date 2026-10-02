@@ -17,8 +17,12 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         garantir_admin_inicial(db)
+        vazio = db.query(models.Cliente).count() == 0
     finally:
         db.close()
+    if settings.seed_demo and vazio:
+        from seed import main as seed_demo
+        seed_demo(reset=False)
     yield
 
 

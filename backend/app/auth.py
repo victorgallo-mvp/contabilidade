@@ -39,10 +39,20 @@ def get_admin(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
 
 
 def garantir_admin_inicial(db: Session) -> None:
-    if db.query(Usuario).count() == 0:
+    """Garante o superadmin definido nas variáveis de ambiente.
+
+    A senha do ambiente sempre prevalece: trocar ADMIN_PASSWORD e reiniciar troca a senha.
+    """
+    user = db.query(Usuario).filter(Usuario.username == settings.admin_username).first()
+    if user is None:
         db.add(Usuario(
             username=settings.admin_username,
             nome=settings.admin_nome,
             senha_hash=hash_senha(settings.admin_password),
         ))
-        db.commit()
+    else:
+        if not verificar_senha(settings.admin_password, user.senha_hash):
+            user.senha_hash = hash_senha(settings.admin_password)
+        user.nome = settings.admin_nome
+        user.ativo = True
+    db.commit()

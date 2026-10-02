@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     admin_password: str = "pedro123"
     admin_nome: str = "Pedro"
 
+    # popula clientes fictícios no primeiro boot se o banco estiver vazio (só para demonstração)
+    seed_demo: bool = False
+
     # regras de negócio
     dia_corte_padrao: int = 10  # dia do mês seguinte à competência
 
