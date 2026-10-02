@@ -47,10 +47,11 @@ export default function Revisao() {
                     <Badge className="bg-accent-soft text-accent">{item.obrigacao.descricao}</Badge>
                     {item.documento.enviado_por === 'admin' && <Badge className="bg-raised text-muted">anexado por {item.documento.enviado_por_nome} via {item.documento.canal}</Badge>}
                   </div>
-                  <p className="text-sm mt-1 truncate">{item.documento.nome_arquivo} <span className="text-muted">· {tamanho(item.documento.tamanho)} · {dataHora(item.documento.created_at)}</span></p>
+                  <p className="text-sm mt-1 break-all">{item.documento.nome_arquivo}</p>
+                  <p className="text-xs text-muted">{tamanho(item.documento.tamanho)} · {dataHora(item.documento.created_at)}</p>
                   <LeituraIA d={item.documento} />
                 </div>
-                <div className="flex flex-wrap gap-2 shrink-0">
+                <div className="flex flex-wrap gap-2 shrink-0 [&>button]:flex-1 md:[&>button]:flex-none">
                   <button className="btn-secondary" onClick={() => abrirArquivo(`/admin/documentos/${item.documento.id}/download`)}>
                     <Eye className="h-4 w-4" /> Abrir
                   </button>
@@ -77,10 +78,10 @@ export function LeituraIA({ d }) {
   if (d.ia_status === 'pulado' || d.ia_status === 'erro') return null
   return (
     <div className={`mt-2 rounded-xl px-3 py-2 text-xs ${d.ia_status === 'alerta' ? 'bg-warning-soft text-warning' : 'bg-raised text-muted'}`}>
-      <p className="inline-flex items-center gap-1 font-semibold">
-        {d.ia_status === 'alerta' ? <AlertTriangle className="h-3 w-3" /> : <Sparkles className="h-3 w-3" />}
-        {d.ia_status === 'alerta' ? 'Conferir: ' : 'Leitura automática: '}
-        <span className="font-normal">{d.ia_alerta || d.ia_resumo}</span>
+      <p>
+        {d.ia_status === 'alerta' ? <AlertTriangle className="h-3 w-3 inline -mt-0.5 mr-1" /> : <Sparkles className="h-3 w-3 inline -mt-0.5 mr-1" />}
+        <span className="font-semibold">{d.ia_status === 'alerta' ? 'Conferir: ' : 'Leitura automática: '}</span>
+        {d.ia_alerta || d.ia_resumo}
       </p>
       {(d.ia_banco || d.ia_periodo_inicio || d.ia_saldo_final) && (
         <p className="mt-0.5 opacity-90">

@@ -18,6 +18,7 @@ const COLUNAS = [
 
 export default function Kanban() {
   const [competencia, setCompetencia] = useState('todas')
+  const [colunaMobile, setColunaMobile] = useState('atrasado')
   const [cobrar, setCobrar] = useState(null)
   const [anexar, setAnexar] = useState(null)
 
@@ -53,12 +54,30 @@ export default function Kanban() {
         </div>
       )}
 
+      {/* no celular, uma coluna por vez */}
+      <div className="md:hidden flex gap-1 bg-surface border border-border rounded-xl p-1 overflow-x-auto">
+        {COLUNAS.map((col) => {
+          const n = data?.colunas?.[col.key]?.length || 0
+          const ativa = colunaMobile === col.key
+          return (
+            <button
+              key={col.key}
+              onClick={() => setColunaMobile(col.key)}
+              className={clsx('flex-1 whitespace-nowrap rounded-lg px-2 py-1.5 text-xs font-semibold transition',
+                ativa ? 'bg-accent text-white' : 'text-muted')}
+            >
+              {col.titulo.replace(' prazo', '')} <span className={clsx('ml-0.5', ativa ? 'opacity-80' : 'opacity-60')}>{n}</span>
+            </button>
+          )
+        })}
+      </div>
+
       {isLoading ? <Carregando /> : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {COLUNAS.map((col) => {
             const cards = data?.colunas?.[col.key] || []
             return (
-              <section key={col.key} className={clsx('card border-t-4 p-3 min-h-[200px]', col.cor)}>
+              <section key={col.key} className={clsx('card border-t-4 p-3 min-h-[200px]', col.cor, colunaMobile === col.key ? 'block' : 'hidden md:block')}>
                 <header className="flex items-center justify-between px-1 pb-2">
                   <h2 className={clsx('font-bold text-sm', col.tom)}>{col.titulo}</h2>
                   <span className="text-xs font-semibold text-muted bg-raised rounded-full px-2 py-0.5">{cards.length}</span>

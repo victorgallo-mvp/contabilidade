@@ -20,7 +20,7 @@ export default function Clientes() {
           <h1 className="text-xl font-bold">Clientes</h1>
           <p className="text-sm text-muted">{data?.length || 0} ativos. Cada um tem seu link fixo do portal.</p>
         </div>
-        <button className="btn-primary" onClick={() => setNovo(true)}><Plus className="h-4 w-4" /> Novo cliente</button>
+        <button className="btn-primary w-full sm:w-auto" onClick={() => setNovo(true)}><Plus className="h-4 w-4" /> Novo cliente</button>
       </div>
 
       <div className="relative max-w-sm">
@@ -40,7 +40,7 @@ export default function Clientes() {
                     <p className="font-semibold text-sm truncate">{c.nome}</p>
                     <p className="text-xs text-muted truncate">{c.responsavel || '—'} · {c.whatsapp || 'sem WhatsApp'} · {c.contas.length} conta(s)</p>
                   </div>
-                  <div className="hidden sm:flex gap-1.5">
+                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 shrink-0">
                     {c.atrasadas > 0 && <Badge className="bg-danger-soft text-danger">{c.atrasadas} atrasada(s)</Badge>}
                     {c.em_analise > 0 && <Badge className="bg-accent-soft text-accent">{c.em_analise} em análise</Badge>}
                     {c.atrasadas === 0 && c.em_analise === 0 && <Badge className="bg-success-soft text-success">em dia</Badge>}

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Download, Search, Eye } from 'lucide-react'
+import { Download, Search, Eye, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react'
 import { toast } from 'sonner'
 import { api, baixarArquivo, abrirArquivo, erroMsg } from '../api/client'
 import { Carregando, Vazio, Badge } from '../components/ui'
@@ -20,6 +20,7 @@ export default function Historico() {
     inicio: '', fim: '', busca: '',
   })
   const [aplicado, setAplicado] = useState(f)
+  const [filtrosAbertos, setFiltrosAbertos] = useState(!!sp.get('cliente_id'))
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
 
   const { data: clientes } = useQuery({ queryKey: ['clientes', 'todos'], queryFn: () => api.get('/admin/clientes', { params: { incluir_inativos: true } }).then((r) => r.data) })
@@ -27,7 +28,8 @@ export default function Historico() {
   const params = Object.fromEntries(Object.entries(aplicado).filter(([, v]) => v !== '' && v !== 'todos' && v !== 'todas'))
   const { data, isLoading } = useQuery({ queryKey: ['historico', params], queryFn: () => api.get('/admin/historico', { params: { ...params, limit: 500 } }).then((r) => r.data) })
 
-  const aplicar = () => { setAplicado(f); if (f.cliente_id) setSp({ cliente_id: f.cliente_id }); else setSp({}) }
+  const aplicar = () => { setAplicado(f); setFiltrosAbertos(false); if (f.cliente_id) setSp({ cliente_id: f.cliente_id }); else setSp({}) }
+  const ativos = Object.keys(params).length
   const exportar = () => {
     const qs = new URLSearchParams(params).toString()
     baixarArquivo(`/admin/historico.csv?${qs}`, 'historico.csv').catch((e) => toast.error(erroMsg(e)))
@@ -40,10 +42,15 @@ export default function Historico() {
           <h1 className="text-xl font-bold">Histórico completo</h1>
           <p className="text-sm text-muted">Todo envio, cobrança, aceite e acesso, com data, hora e origem. Nada aqui é apagado.</p>
         </div>
-        <button className="btn-secondary" onClick={exportar}><Download className="h-4 w-4" /> Exportar CSV</button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <button className="btn-secondary flex-1 sm:flex-none md:hidden" onClick={() => setFiltrosAbertos((v) => !v)}>
+            <SlidersHorizontal className="h-4 w-4" /> Filtros{ativos > 0 && ` (${ativos})`} {filtrosAbertos ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
+          <button className="btn-secondary flex-1 sm:flex-none" onClick={exportar}><Download className="h-4 w-4" /> <span className="hidden sm:inline">Exportar </span>CSV</button>
+        </div>
       </div>
 
-      <div className="card p-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+      <div className={`card p-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 ${filtrosAbertos ? '' : 'hidden md:grid'}`}>
         <div className="col-span-2">
           <label className="label">Cliente</label>
           <select className="input" value={f.cliente_id} onChange={set('cliente_id')}>
@@ -82,7 +89,32 @@ export default function Historico() {
       </div>
 
       {isLoading ? <Carregando /> : !data?.length ? <Vazio titulo="Nenhum registro" texto="Ajuste os filtros." /> : (
-        <div className="card overflow-x-auto">
+        <>
+        {/* celular: lista em cards */}
+        <ul className="md:hidden space-y-2">
+          {data.map((e) => (
+            <li key={e.id} className="card p-3 space-y-1">
+              <div className="flex items-center justify-between gap-2">
+                <Badge className={COR_EVENTO[e.tipo] || 'bg-raised text-muted'}>{e.tipo_rotulo}</Badge>
+                <span className="text-[11px] text-muted whitespace-nowrap">{dataHora(e.created_at)}</span>
+              </div>
+              {e.cliente_id && <Link className="text-sm font-semibold block truncate" to={`/clientes/${e.cliente_id}`}>{e.cliente_nome}</Link>}
+              <p className="text-xs text-primary break-words">{e.descricao}</p>
+              <div className="flex flex-wrap items-center gap-x-2 text-[11px] text-muted">
+                {e.documento_id && (
+                  <button className="text-accent inline-flex items-center gap-1" onClick={() => abrirArquivo(`/admin/documentos/${e.documento_id}/download`)}>
+                    <Eye className="h-3 w-3" /> abrir arquivo
+                  </button>
+                )}
+                {e.competencia && <span>{competenciaRotulo(e.competencia)}</span>}
+                <span>por {e.ator}</span>
+                {e.ip && <span>IP {e.ip}</span>}
+              </div>
+            </li>
+          ))}
+        </ul>
+        {/* desktop: tabela */}
+        <div className="card overflow-x-auto hidden md:block">
           <table className="w-full text-sm min-w-[820px]">
             <thead className="text-xs text-muted uppercase tracking-wide bg-raised">
               <tr>
@@ -117,6 +149,7 @@ export default function Historico() {
           </table>
           {data.length >= 500 && <p className="text-xs text-muted px-4 py-2">Mostrando os 500 mais recentes. Refine os filtros ou exporte o CSV para ver tudo.</p>}
         </div>
+        </>
       )}
     </div>
   )

@@ -52,7 +52,7 @@ export default function ClienteDetalhe() {
           <p className="text-sm text-muted">{c.cnpj || 'sem CNPJ'} · {c.responsavel || '—'} · {c.whatsapp || 'sem WhatsApp'} · {c.email || 'sem e-mail'}</p>
           {!c.ativo && <Badge className="bg-danger-soft text-danger mt-1">inativo</Badge>}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto [&>*]:flex-1 sm:[&>*]:flex-none">
           <Link to={`/historico?cliente_id=${c.id}`} className="btn-secondary"><History className="h-4 w-4" /> Histórico</Link>
           <button className="btn-secondary" onClick={() => setEditar(true)}><Pencil className="h-4 w-4" /> Editar</button>
         </div>
@@ -101,9 +101,11 @@ export default function ClienteDetalhe() {
       </div>
 
       <section className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-bold">Pendências por mês</h2>
-          <button className="btn-secondary text-xs" onClick={() => setAnexar({})}><Paperclip className="h-3.5 w-3.5" /> Anexar em nome do cliente</button>
+          <button className="btn-secondary text-xs" onClick={() => setAnexar({})}>
+            <Paperclip className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Anexar em nome do cliente</span><span className="sm:hidden">Anexar</span>
+          </button>
         </div>
         {competencias.length === 0 && <p className="text-sm text-muted">Nenhuma pendência gerada ainda.</p>}
         {competencias.map((comp) => {
@@ -133,11 +135,11 @@ export default function ClienteDetalhe() {
                     {o.documentos.length > 0 && (
                       <ul className="mt-1 space-y-0.5">
                         {o.documentos.map((d) => (
-                          <li key={d.id} className="flex items-center gap-2 text-xs text-muted">
+                          <li key={d.id} className="flex flex-wrap items-center gap-2 text-xs text-muted">
                             <button className="hover:underline inline-flex items-center gap-1 text-primary" onClick={() => abrirArquivo(`/admin/documentos/${d.id}/download`)}>
                               <Eye className="h-3 w-3" /> {d.nome_arquivo}
                             </button>
-                            <span>{tamanho(d.tamanho)} · {dataHora(d.created_at)} · {d.enviado_por === 'admin' ? `anexado por ${d.enviado_por_nome} (${d.canal})` : 'pelo cliente'}</span>
+                            <span className="hidden sm:inline">{tamanho(d.tamanho)} · {dataHora(d.created_at)} · {d.enviado_por === 'admin' ? `anexado por ${d.enviado_por_nome} (${d.canal})` : 'pelo cliente'}</span>
                             <StatusDocBadge status={d.status} />
                           </li>
                         ))}
