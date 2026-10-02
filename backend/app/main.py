@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Contabilidade - Gestão de Documentos", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Contabilidade - Gestão de Documentos", version="0.2.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,4 +48,4 @@ app.include_router(notificacoes.router)
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "version": app.version}
